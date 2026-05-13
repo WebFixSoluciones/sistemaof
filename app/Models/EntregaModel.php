@@ -140,4 +140,28 @@ class EntregaModel {
             return $e->getMessage();
         }
     }
+
+    /**
+     * Obtiene el inventario actual de productos agrupado por proyecto
+     */
+    public function getInventarioProyectos() {
+        $sql = "
+            SELECT 
+                p.NOM_PROY,
+                p.COD_PROY,
+                d.descrip_item,
+                d.umed_item,
+                SUM(d.cant_recib) as total_recibido,
+                SUM(d.cant_usada) as total_usado,
+                SUM(d.cant_actual) as stock_actual
+            FROM det_ocompra d
+            INNER JOIN ord_compras oc ON d.id_ocompra = oc.id_ocompra
+            INNER JOIN proyectos p ON d.id_proy = p.ID_PROY
+            WHERE d.cant_recib > 0 OR d.cant_actual > 0
+            GROUP BY p.ID_PROY, p.NOM_PROY, p.COD_PROY, d.descrip_item, d.umed_item
+            ORDER BY p.NOM_PROY ASC, d.descrip_item ASC
+        ";
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll();
+    }
 }

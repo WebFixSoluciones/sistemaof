@@ -1,60 +1,57 @@
 <?php ob_start(); ?>
 
-<div class="flex items-center gap-2 mb-5 text-xs text-gray-400">
-    <a href="<?= BASE_URL ?>/compras" class="hover:text-gray-600">← Control de OC</a>
-    <span>/</span>
-    <a href="<?= BASE_URL ?>/compras/recepcion" class="hover:text-gray-600">Recepción</a>
-    <span>/</span>
-    <span class="font-semibold text-gray-700"><?= htmlspecialchars($orden['cod_ocompra']) ?></span>
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-900">Recepción de Materiales</h2>
+        <p class="text-sm text-gray-500">Inspección física contra Orden de Compra: <span class="font-bold text-primary"><?= htmlspecialchars($orden['cod_ocompra']) ?></span></p>
+    </div>
+    <a href="<?= BASE_URL ?>/compras/recepcion" class="text-sm text-gray-600 hover:text-gray-900 bg-gray-100 px-4 py-2 rounded-lg transition-colors">
+        &larr; Volver
+    </a>
 </div>
 
-<div class="mb-5">
-    <h2 class="text-xl font-bold text-gray-900">Recepción de Materiales</h2>
-    <p class="text-xs text-gray-500">Validación física contra OC: <span class="font-bold text-primary"><?= htmlspecialchars($orden['cod_ocompra']) ?></span> — <?= htmlspecialchars($orden['nom_prov'] ?? '') ?></p>
-</div>
-
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-5">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<div class="bg-surface shadow-sm rounded-xl border border-gray-100 mb-8 p-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
-            <span class="block text-[10px] font-bold uppercase text-gray-400">Proyecto</span>
-            <span class="text-sm font-medium text-gray-800"><?= htmlspecialchars($orden['NOM_PROY'] ?? $orden['cod_proy']) ?></span>
+            <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Proyecto</p>
+            <p class="text-sm font-medium text-gray-800"><?= htmlspecialchars($orden['NOM_PROY'] ?? $orden['cod_proy']) ?></p>
         </div>
         <div>
-            <span class="block text-[10px] font-bold uppercase text-gray-400">Proveedor</span>
-            <span class="text-sm font-medium text-gray-800"><?= htmlspecialchars($orden['nom_prov'] ?? 'N/A') ?></span>
+            <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Proveedor</p>
+            <p class="text-sm font-medium text-gray-800"><?= htmlspecialchars($orden['nom_prov'] ?? 'N/A') ?></p>
         </div>
         <div>
-            <span class="block text-[10px] font-bold uppercase text-gray-400">Fecha Orden</span>
-            <span class="text-sm font-medium text-gray-800"><?= $orden['fecha_orden'] ?></span>
+            <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Fecha Emisión</p>
+            <p class="text-sm font-medium text-gray-800"><?= $orden['fecha_orden'] ?></p>
         </div>
         <div>
-            <span class="block text-[10px] font-bold uppercase text-gray-400">Estado</span>
-            <span class="text-sm font-bold text-amber-600"><?= strtoupper($orden['estatus_orden']) ?></span>
+            <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Estatus Actual</p>
+            <p class="text-sm font-bold text-orange-600"><?= strtoupper($orden['estatus_orden']) ?></p>
         </div>
     </div>
 </div>
 
-<form action="<?= BASE_URL ?>/compras/procesar-recepcion" method="POST" id="formRecepcion">
+<form action="<?= BASE_URL ?>/compras/procesar-recepcion" method="POST">
     <input type="hidden" name="id_ocompra" value="<?= $orden['id_ocompra'] ?>">
 
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-5">
-        <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 class="text-sm font-semibold text-gray-800">Ítems a Validar</h3>
-            <span class="text-[10px] text-gray-400">Solo ingrese cantidad en lo que recibió hoy.</span>
+    <div class="bg-white shadow-sm rounded-xl border border-gray-100 overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-900">Ítems a Validar</h3>
+            <span class="text-xs text-gray-500">Solo ingrese cantidad en lo que recibió hoy.</span>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-100 text-xs">
+            <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-white">
                     <tr>
-                        <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase text-[10px]">Material</th>
-                        <th class="px-3 py-2 text-center font-semibold text-gray-500 uppercase text-[10px]">U.Med</th>
-                        <th class="px-3 py-2 text-right font-semibold text-gray-500 uppercase text-[10px]">Pedido</th>
-                        <th class="px-3 py-2 text-right font-semibold text-gray-500 uppercase text-[10px]">Recibido</th>
-                        <th class="px-3 py-2 text-right font-semibold text-red-500 uppercase text-[10px]">Pendiente</th>
-                        <th class="px-3 py-2 text-center font-semibold text-primary uppercase text-[10px] bg-indigo-50">Recibido HOY</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción del Material</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Unidad</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Solicitado</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ya Recibido</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase text-red-600">Falta</th>
+                        <th class="px-6 py-3 text-center text-xs font-bold text-primary uppercase bg-indigo-50/50">Recibido HOY</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="bg-white divide-y divide-gray-200">
                     <?php 
                     $todosCompletos = true;
                     foreach ($detalles as $item): 
@@ -62,30 +59,38 @@
                         $cant_recib = $item['cant_recib'] !== null ? (float)$item['cant_recib'] : 0;
                         if ($pend_recib > 0) $todosCompletos = false;
                     ?>
-                    <tr class="hover:bg-gray-50 transition-colors <?= $pend_recib <= 0 ? 'bg-green-50/30 opacity-60' : '' ?>">
-                        <td class="px-3 py-2">
-                            <div class="font-medium text-gray-800 max-w-[220px] truncate" title="<?= htmlspecialchars($item['descrip_item']) ?>">
-                                <?= htmlspecialchars($item['descrip_item']) ?>
-                            </div>
+                    <tr class="<?= $pend_recib <= 0 ? 'bg-green-50/30 opacity-60' : '' ?>">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                            <?= htmlspecialchars($item['descrip_item']) ?>
                             <?php if ($pend_recib <= 0): ?>
-                                <span class="inline-flex text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 mt-0.5">Completo</span>
+                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                    Completo
+                                </span>
                             <?php endif; ?>
                         </td>
-                        <td class="px-3 py-2 text-center text-gray-500"><?= htmlspecialchars($item['umed_item']) ?></td>
-                        <td class="px-3 py-2 text-right font-semibold text-gray-800"><?= (float)$item['cant_item'] ?></td>
-                        <td class="px-3 py-2 text-right <?= $cant_recib > 0 ? 'text-green-600 font-semibold' : 'text-gray-400' ?>"><?= $cant_recib ?></td>
-                        <td class="px-3 py-2 text-right font-bold <?= $pend_recib > 0 ? 'text-red-500' : 'text-green-600' ?>"><?= $pend_recib ?></td>
-                        <td class="px-3 py-2 text-center bg-indigo-50/30">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            <?= htmlspecialchars($item['umed_item']) ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-medium">
+                            <?= (float)$item['cant_item'] ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            <?= $cant_recib ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600 text-center">
+                            <?= $pend_recib ?>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center bg-indigo-50/20">
                             <?php if ($pend_recib > 0): ?>
                                 <input type="number" 
                                        name="cant_entrega[<?= $item['corre_item'] ?>]" 
                                        min="0" 
                                        max="<?= $pend_recib ?>" 
                                        step="0.01"
-                                       class="w-20 px-2 py-1.5 border border-gray-200 rounded-lg text-center text-xs focus:ring-indigo-500 focus:border-indigo-500"
+                                       class="w-24 px-3 py-1.5 border border-gray-300 rounded text-center focus:ring-primary focus:border-primary sm:text-sm"
                                        placeholder="0">
                             <?php else: ?>
-                                <span class="text-gray-300">—</span>
+                                <span class="text-gray-400 text-xs">-</span>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -96,43 +101,25 @@
     </div>
 
     <?php if (!$todosCompletos): ?>
-    <div class="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-        <div class="w-full sm:flex-1">
-            <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Observaciones (opcional)</label>
-            <input type="text" name="observaciones" placeholder="Ej. Material llegó húmedo, caja 2 rota..." 
-                   class="block w-full px-3 py-2 border border-gray-200 rounded-lg text-xs focus:ring-indigo-500 focus:border-indigo-500">
+    <div class="flex flex-col sm:flex-row gap-4 items-center justify-between bg-surface shadow-sm rounded-xl border border-gray-100 p-6">
+        <div class="w-full sm:w-1/2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notas / Observaciones de Entrega</label>
+            <input type="text" name="observaciones" placeholder="Ej. El material llegó húmedo, la caja 2 rota..." 
+                   class="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary sm:text-sm">
         </div>
-        <button type="button" onclick="confirmarRecepcion()" 
-                class="btn-primary px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primaryHover text-xs whitespace-nowrap">
-            Confirmar Recepción
-        </button>
+        <div class="w-full sm:w-auto mt-4 sm:mt-0">
+            <button type="submit" class="w-full btn-primary flex justify-center py-3 px-6 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-primary hover:bg-primaryHover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                Confirmar Recepción Seleccionada
+            </button>
+        </div>
     </div>
     <?php else: ?>
-    <div class="bg-green-50 border border-green-200 rounded-xl p-5 text-center">
-        <h3 class="text-base font-bold text-green-800">¡Orden Completada!</h3>
-        <p class="text-xs text-green-600 mt-1">Todos los ítems de esta OC han sido recibidos satisfactoriamente.</p>
+    <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+        <h3 class="text-lg font-bold text-green-800">¡Orden Completada!</h3>
+        <p class="text-sm text-green-600 mt-1">Todos los ítems de esta Orden de Compra han sido recibidos satisfactoriamente en el proyecto.</p>
     </div>
     <?php endif; ?>
 </form>
-
-<script>
-function confirmarRecepcion() {
-    Swal.fire({
-        title: '¿Confirmar recepción?',
-        text: 'Se registrarán las cantidades ingresadas. Esta operación actualiza el inventario de la OC.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#6366f1',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Confirmar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('formRecepcion').submit();
-        }
-    });
-}
-</script>
 
 <?php 
 $content = ob_get_clean(); 

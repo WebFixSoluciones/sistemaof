@@ -89,20 +89,6 @@
         <p class="px-3 pt-5 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Compras & Campo</p>
 
         <?php if (puedeVer('COMPRAS')): ?>
-        <a href="<?= BASE_URL ?>/compras"
-           class="nav-item <?= isActive('/compras') && !isActive('/compras/aprobacion') && !isActive('/compras/recepcion') && !isActive('/compras/stock') && !isActive('/compras/recibir') ? 'active' : '' ?> flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
-            <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Control de OC
-        </a>
-        <a href="<?= BASE_URL ?>/compras/stock"
-           class="nav-item <?= isActive('/compras/stock') ?> flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
-            <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-            Stock Productos
-        </a>
         <a href="<?= BASE_URL ?>/compras/aprobacion"
            class="nav-item <?= isActive('/compras/aprobacion') ?> flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
             <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -121,6 +107,18 @@
             Recepción en Campo
         </a>
         <?php endif; ?>
+        <?php endif; ?>
+
+        <!-- ── INVENTARIO & PRODUCTOS ────────────────── -->
+        <?php if (puedeVer('PRODUCTOS') || puedeVer('ENTREGAS')): ?>
+        <p class="px-3 pt-5 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Almacén y Stock</p>
+        <a href="<?= BASE_URL ?>/compras/inventario"
+           class="nav-item <?= isActive('/compras/inventario') ? 'active' : '' ?> flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
+            <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            Inventario en Proyecto
+        </a>
         <?php endif; ?>
 
         <!-- ── ADMINISTRACIÓN (solo Superadmin) ── -->

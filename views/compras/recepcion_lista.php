@@ -1,59 +1,79 @@
 <?php ob_start(); ?>
 
-<div class="flex items-center gap-2 mb-5 text-xs text-gray-400">
-    <a href="<?= BASE_URL ?>/compras" class="hover:text-gray-600">← Control de OC</a>
-    <span>/</span>
-    <span class="font-semibold text-gray-700">Recepción en Campo</span>
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-900">Material en Tránsito</h2>
+        <p class="text-sm text-gray-500">Bandeja de Recepción de Entregas en Sitio (Exclusivo Ingenieros Residentes).</p>
+    </div>
+    <div class="relative w-full sm:w-72">
+        <input type="text" id="buscarOrden" placeholder="Buscar por OC, proyecto o proveedor..." 
+               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
+        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    </div>
 </div>
 
-<div class="mb-5">
-    <h2 class="text-xl font-bold text-gray-900">Recepción de Material en Campo</h2>
-    <p class="text-xs text-gray-500">OC aprobadas con entregas pendientes. Seleccione una para registrar recepción.</p>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="listaOrdenes">
     <?php if (empty($ordenes)): ?>
-        <div class="col-span-full bg-gray-50 rounded-xl p-8 text-center text-gray-400 border border-dashed border-gray-200">
-            No hay entregas pendientes.
+        <div class="col-span-full bg-gray-50 rounded-lg p-8 text-center text-gray-500 border border-dashed border-gray-300">
+            No hay camiones en ruta ni entregas pendientes para su proyecto actual.
         </div>
     <?php else: ?>
         <?php foreach ($ordenes as $oc): ?>
-        <div class="bg-white shadow-sm rounded-xl border border-gray-100 hover:shadow-md transition-shadow flex flex-col">
-            <div class="p-4 flex-1">
-                <div class="flex justify-between items-start mb-3">
+        <div class="oc-card bg-white shadow-sm rounded-xl border border-gray-100 hover:shadow-md transition-shadow flex flex-col">
+            <div class="p-5 flex-1">
+                <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h3 class="text-base font-bold text-primary"><?= htmlspecialchars($oc['cod_ocompra']) ?></h3>
-                        <p class="text-[10px] text-gray-400"><?= $oc['fecha_orden'] ?></p>
+                        <h3 class="text-lg font-bold text-primary"><?= htmlspecialchars($oc['cod_ocompra']) ?></h3>
+                        <p class="text-xs text-gray-500">Emitida: <?= $oc['fecha_orden'] ?></p>
                     </div>
                     <?php if ($oc['estatus_orden'] === 'Anticipo'): ?>
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Parcial</span>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+                            Recepción Parcial
+                        </span>
                     <?php else: ?>
-                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">En Tránsito</span>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-md bg-orange-50 text-orange-700 border border-orange-200">
+                            En Tránsito
+                        </span>
                     <?php endif; ?>
                 </div>
                 
-                <div class="space-y-1 text-xs mb-3">
-                    <p class="text-gray-700"><span class="font-semibold">Proyecto:</span> <?= htmlspecialchars($oc['cod_proy']) ?></p>
-                    <p class="text-gray-500 truncate" title="<?= htmlspecialchars($oc['nom_prov'] ?? '') ?>"><?= htmlspecialchars($oc['nom_prov'] ?? 'N/A') ?></p>
+                <div class="mb-4">
+                    <p class="text-sm text-gray-800 font-medium line-clamp-1">Proyecto: <?= htmlspecialchars($oc['NOM_PROY'] ?? $oc['cod_proy']) ?></p>
+                    <p class="text-sm text-gray-500 line-clamp-1">Prov: <?= htmlspecialchars($oc['nom_prov'] ?? 'N/A') ?></p>
                 </div>
 
-                <div class="pt-3 border-t border-gray-100">
-                    <p class="text-[10px] font-bold uppercase text-gray-400 mb-1.5">Progreso</p>
-                    <div class="w-full bg-gray-100 rounded-full h-1.5">
-                        <div class="bg-primary h-1.5 rounded-full" style="width: <?= $oc['estatus_orden'] === 'Anticipo' ? '50%' : '5%' ?>"></div>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Progreso Estimado</p>
+                    <!-- Barra visual de ejemplo -->
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-primary h-2.5 rounded-full" style="width: <?= $oc['estatus_orden'] === 'Anticipo' ? '50%' : '5%' ?>"></div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 p-3 border-t border-gray-100 rounded-b-xl">
-                <a href="<?= BASE_URL ?>/compras/recibir?id=<?= $oc['id_ocompra'] ?>" 
-                   class="block w-full text-center text-xs font-semibold text-white bg-gray-800 hover:bg-gray-700 rounded-lg py-2 transition-colors">
-                    📦 Inspección y Recepción
+            <div class="bg-gray-50 p-4 border-t border-gray-100 rounded-b-xl">
+                <a href="<?= BASE_URL ?>/compras/recibir?id=<?= $oc['id_ocompra'] ?>" class="block w-full text-center text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg py-2 transition-colors">
+                    Realizar Inspección y Recepción
                 </a>
             </div>
         </div>
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const buscarOrden = document.getElementById('buscarOrden');
+        const cards = document.querySelectorAll('.oc-card');
+
+        buscarOrden.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+    });
+</script>
 
 <?php 
 $content = ob_get_clean(); 

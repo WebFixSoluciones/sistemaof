@@ -39,14 +39,12 @@ Router::get('/admin/usuarios/crear', [AdminController::class, 'crearUsuario']);
 Router::post('/admin/usuarios/guardar', [AdminController::class, 'guardarUsuario']);
 
 // Rutas de Compras y Entregas (Fase 4)
-Router::get('/compras', [CompraController::class, 'index']);
-Router::get('/compras/detalle', [CompraController::class, 'detalle']);
-Router::get('/compras/stock', [CompraController::class, 'stock']);
 Router::get('/compras/aprobacion', [CompraController::class, 'aprobacion']);
 Router::post('/compras/aprobar', [CompraController::class, 'aprobarOc']);
 Router::get('/compras/recepcion', [CompraController::class, 'recepcion']);
 Router::get('/compras/recibir', [CompraController::class, 'recibirOc']);
 Router::post('/compras/procesar-recepcion', [CompraController::class, 'procesarRecepcion']);
+Router::get('/compras/inventario', [CompraController::class, 'inventario']);
 
 // Despachar la ruta actual
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
