@@ -1,0 +1,6 @@
+Options -Indexes
+RewriteEngine On
+
+# Redirigir todo el tráfico a la carpeta /public
+RewriteCond %{REQUEST_URI} !^/sistemaof/public/
+RewriteRule ^(.*)$ public/$1 [L]

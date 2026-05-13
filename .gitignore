@@ -1,0 +1,21 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+login_debug.log
+error_log
+*.log
+
+# Debug and testing scripts
+debug_login.php
+
+# IDEs
+.vscode/
+.idea/
+*.code-workspace

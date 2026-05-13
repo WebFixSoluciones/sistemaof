@@ -1,0 +1,739 @@
+================================================================================
+ PLANIFICACIÓN DETALLADA — SistemaOF v3.0
+ Fecha: 2026-05-12
+ Documento: Especificación funcional y técnica completa
+================================================================================
+
+================================================================================
+ 1. DESCRIPCIÓN GENERAL
+================================================================================
+
+  Nombre del sistema:   SistemaOF
+  Versión:              3.0
+  Tecnología:           PHP (MVC) + MySQL/MariaDB
+  Servidor:             Apache/Nginx — cPanel compatible
+  Versión PHP:          8.4+
+  Versión MariaDB:      11.4+
+  Charset:              utf8mb4 (nuevas tablas) / latin1 (tablas originales)
+
+  Empresas operadoras:
+  ├── SERVICIOS DE CONSTRUCCION O&F S. DE R.L.
+  └── PINTER S. DE R.L.
+
+  Propósito:
+  Sistema administrativo modular para la gestión integral de proyectos de
+  construcción, remodelación y servicios. Controla presupuestos, alcances,
+  cotizaciones, compras, entregas, planillas de pago y reportes financieros,
+  con seguridad basada en roles y permisos granulares (RBAC).
+
+================================================================================
+ 2. PRINCIPIOS DEL SISTEMA
+================================================================================
+
+  ├── Modularidad desde el inicio
+  ├── Arquitectura MVC estricta
+  ├── Seguridad basada en roles y permisos (RBAC)
+  ├── Escalabilidad por fases
+  ├── UX/UI compacta, moderna y orientada a productividad
+  ├── Trazabilidad de acciones críticas (bitácora)
+  └── Separación estricta entre lógica, datos y presentación
+
+================================================================================
+ 3. ARQUITECTURA MVC
+================================================================================
+
+  ESTRUCTURA DE CARPETAS:
+  ├── /app
+  │   ├── /Controllers
+  │   │   ├── AuthController.php
+  │   │   ├── DashboardController.php
+  │   │   ├── ProyectoController.php
+  │   │   ├── ClienteController.php
+  │   │   ├── ProveedorController.php
+  │   │   ├── AlcanceController.php
+  │   │   ├── CotizaController.php
+  │   │   ├── CompraController.php
+  │   │   ├── EntregaController.php
+  │   │   ├── PlanillaController.php
+  │   │   ├── ReporteController.php
+  │   │   └── AdminController.php (Seguridad)
+  │   ├── /Models
+  │   │   ├── User.php
+  │   │   ├── Rol.php
+  │   │   ├── Modulo.php
+  │   │   ├── Permiso.php
+  │   │   ├── Proyecto.php
+  │   │   ├── Alcance.php
+  │   │   ├── Cotiza.php
+  │   │   ├── OrdCompra.php
+  │   │   ├── Planilla.php
+  │   │   ├── Cliente.php
+  │   │   ├── Proveedor.php
+  │   │   └── Producto.php
+  │   ├── /Services
+  │   │   ├── AuthService.php
+  │   │   ├── FinancieroService.php
+  │   │   ├── AprobacionService.php
+  │   │   ├── ReporteService.php
+  │   │   └── AuditService.php
+  │   ├── /Middleware
+  │   │   ├── AuthMiddleware.php
+  │   │   ├── RoleMiddleware.php
+  │   │   └── RateLimitMiddleware.php
+  │   └── /Policies
+  │       ├── ProyectoPolicy.php
+  │       ├── CompraPolicy.php
+  │       └── PlanillaPolicy.php
+  ├── /views
+  │   ├── /auth
+  │   ├── /dashboard
+  │   ├── /proyectos
+  │   ├── /alcances
+  │   ├── /cotizaciones
+  │   ├── /compras
+  │   ├── /planillas
+  │   ├── /reportes
+  │   └── /admin
+  ├── /routes
+  │   └── web.php
+  ├── /config
+  │   └── database.php
+  └── /storage
+      ├── /logs
+      └── /exports
+
+  FLUJO DE SOLICITUD:
+  Browser → Routes → Middleware (Auth/Permisos) →
+  Controller → Service → Model → DB → View → Browser
+
+================================================================================
+ 4. SEGURIDAD — MÓDULO RBAC
+================================================================================
+
+  MODELO DE SEGURIDAD:
+  ├── sof_users           Usuarios del sistema
+  ├── sof_roles           Roles disponibles
+  ├── sof_modulos         Módulos del sistema
+  ├── sof_acciones        Acciones por módulo
+  ├── sof_user_roles      Asignación usuario→rol (N:N)
+  ├── sof_role_permissions Permisos rol→módulo→acción
+  ├── sof_audit_logs      Bitácora de acciones
+  ├── sof_user_sessions   Sesiones activas
+  └── sof_password_resets Recuperación de contraseña
+
+  REGLAS DE ACCESO:
+  ├── Un usuario puede tener múltiples roles
+  ├── Un rol puede tener múltiples módulos
+  ├── Cada módulo puede tener múltiples acciones
+  ├── Los permisos afectan: menús, rutas, botones y operaciones
+  └── El Superadmin tiene acceso total sin restricciones
+
+  ROLES INICIALES (8):
+  ├── Superadmin      → Control total, es_superadmin = 1
+  ├── Gerencia        → Acceso gerencial y aprobaciones
+  ├── Administrador   → Administración operativa completa
+  ├── Compras         → Gestión de compras y órdenes
+  ├── Ingeniería      → Gestión de proyectos y alcances
+  ├── Finanzas        → Control financiero y planillas
+  ├── Cotizaciones    → Creación y gestión de cotizaciones
+  └── Consulta        → Solo lectura
+
+  ACCIONES DISPONIBLES (10):
+  VER · CREAR · EDITAR · ELIMINAR · APROBAR
+  IMPRIMIR · EXPORTAR · ANULAR · CERRAR · REABRIR
+
+  PANTALLAS DE SEGURIDAD:
+  ├── Login con hash de contraseña (bcrypt/argon2)
+  ├── Recuperación de contraseña por token
+  ├── Cambio de clave
+  ├── Gestión de usuarios (CRUD)
+  ├── Gestión de roles (CRUD)
+  ├── Asignación de módulos a roles
+  ├── Asignación de acciones por módulo/rol
+  ├── Bitácora de acciones (filtrable)
+  ├── Sesiones activas (ver y cerrar)
+  └── Perfil de usuario
+
+================================================================================
+ 5. MÓDULOS DEL SISTEMA — DETALLE COMPLETO
+================================================================================
+
+  ── MÓDULO 01: SEGURIDAD ─────────────────────────────────────────────────────
+  Acceso:   Solo Superadmin y Administrador (parcial)
+  Tablas:   sof_users, sof_roles, sof_modulos, sof_acciones,
+            sof_user_roles, sof_role_permissions,
+            sof_audit_logs, sof_user_sessions, sof_password_resets
+  Pantallas:
+  ├── Lista de usuarios con filtros y búsqueda
+  ├── Crear/editar usuario (nombre, email, rol, empresa, estatus)
+  ├── Lista de roles
+  ├── Crear/editar rol (nombre, descripción, es_superadmin)
+  ├── Asignación de permisos por rol (interfaz de checkboxes)
+  ├── Bitácora: fecha, usuario, módulo, acción, IP, dato anterior/nuevo
+  └── Sesiones activas con opción de invalidar
+
+  ── MÓDULO 02: DASHBOARD ─────────────────────────────────────────────────────
+  Acceso:   Todos los roles (nivel de detalle según permisos)
+  Pantallas:
+  ├── KPI: Proyectos activos / finalizados
+  ├── KPI: Compras pendientes de aprobación
+  ├── KPI: Cotizaciones del mes
+  ├── KPI: Total planillas del período
+  ├── Lista de últimas 5 actividades
+  ├── Proyectos con mayor actividad
+  └── Alertas del sistema
+
+  ── MÓDULO 03: CLIENTES ──────────────────────────────────────────────────────
+  Tablas:   clientes
+  Campos:   id_clie, nom_clie, rtn_clie, contacto_clie, dir_clie,
+            tel_clie, email_clie, fecha_ing, estatus,
+            saldo_ant, cargos, abonos, saldo_act
+  Pantallas:
+  ├── Lista de clientes (búsqueda, filtro por estatus)
+  ├── Crear/editar cliente
+  ├── Ficha de cliente con historial de proyectos
+  └── Estado de cuenta del cliente
+
+  ── MÓDULO 04: PROVEEDORES ───────────────────────────────────────────────────
+  Tablas:   proveedores
+  Campos:   id_prov, nom_prov, rtn_prov, contacto_prov, dir_prov,
+            tel_prov, email_prov, fecha_ing, estatus,
+            saldo_ant, cargos, abonos, saldo_act
+  Pantallas:
+  ├── Lista de proveedores
+  ├── Crear/editar proveedor
+  ├── Historial de compras
+  └── Estado de cuenta
+
+  ── MÓDULO 05: EMPRESAS ──────────────────────────────────────────────────────
+  Tablas:   empresas
+  Campos:   id_empresa, nom_empresa
+  Pantallas:
+  ├── Lista de empresas
+  └── Crear/editar empresa
+
+  ── MÓDULO 06: INGENIEROS ────────────────────────────────────────────────────
+  Tablas:   ingenieros
+  Campos:   ID_INGE, NOM_INGE, fecha_ing, estatus, CANT_PROY
+  Pantallas:
+  ├── Catálogo de ingenieros
+  ├── Crear/editar ingeniero
+  └── Proyectos asignados
+
+  ── MÓDULO 07: LÍNEAS ────────────────────────────────────────────────────────
+  Tablas:   lineas, det_lineas
+  Líneas actuales:
+  ├── LINEA DE SERVICIO TABLA YESO   (LN_TYESO)
+  ├── LINEA DE SERVICIO DE PINTURA   (LN_PINT)
+  ├── LINEA DE SERVICIO DE PULIDO    (LIN-SELL)
+  ├── REMODELACION
+  ├── IMPERMEABILIZACION
+  ├── INFRAESTRUCTURA
+  └── LIMPIEZA
+
+  det_lineas — Control por proyecto/línea:
+  ├── Costos directos e indirectos
+  ├── Cargos, abonos y saldo
+  └── Estados por trimestre T01-T12 y adicionales ADI_T01-T12:
+      P = Pendiente
+      F = Finalizado
+      R = Revisión
+      B = Bloqueado
+
+  ── MÓDULO 08: PRODUCTOS Y SERVICIOS ─────────────────────────────────────────
+  Tablas:   productos, tipos, mano_obra, costos
+  Tipos de producto:
+  ├── PRODUCTOS / MATERIALES
+  └── MANO DE OBRA / SERVICIOS
+
+  Costos configurables:
+  Directos:
+  ├── Equipo de Protección
+  ├── Limpieza
+  ├── Imprevisto material
+  └── Imprevistos contratistas 10%
+  Indirectos:
+  ├── Supervisión
+  ├── Aislamiento Eléctrico
+  ├── Supervisión Especial
+  ├── Provisión Administrativa 10.7%
+  └── Logística
+
+  ── MÓDULO 09: PROYECTOS ─────────────────────────────────────────────────────
+  Tablas:   proyectos
+  Campos clave:
+  ├── ID_PROY, COD_PROY (único), NOM_PROY, DESC_PROY
+  ├── ID_CLIE → clientes
+  ├── ID_EMPRESA → empresas
+  ├── ID_INGE → ingenieros (responsable principal)
+  ├── NOM_INGE2, NOM_INGE3 (hasta 3 ingenieros)
+  ├── FECHA_INI, FECHA_FIN (planificado)
+  ├── FEC_INIRES, FEC_FINRES (real)
+  ├── NOM_FACTURAR, RTN_FACTURAR
+  ├── VALOR_PROY, CARGO_PROY, ABONO_PROY, ACTUAL_PROY
+  ├── DIRECC_PROY
+  └── ACTIVO: Activo/Inactivo
+
+  Pantallas:
+  ├── Listado de proyectos con filtros
+  ├── Crear/editar proyecto
+  └── Ficha maestra del proyecto con pestañas:
+      ├── Información general
+      ├── Alcances y costos
+      ├── Cotizaciones
+      ├── Órdenes de compra
+      ├── Entregas
+      ├── Planillas
+      └── Reportes del proyecto
+
+  ── MÓDULO 10: ALCANCES Y COSTOS ─────────────────────────────────────────────
+  Tablas:   alcance, det_alcance, det_costos
+
+  alcance — Por proyecto/línea:
+  ├── Descripción y unidad de medida
+  ├── Cantidad, costo unitario
+  ├── Costo material, mano de obra, otros
+  ├── ISV, subtotal, imprevistos, total
+  ├── % Utilidad y valor de utilidad
+  └── Precio y oferta: subtotal, ISV, total
+
+  det_alcance — Ítems del alcance:
+  ├── Producto, descripción, unidad
+  ├── Cantidad, costo unitario
+  ├── Subtotal, ISV, imprevistos, total
+  └── Aplica ISV: Si/No
+
+  det_costos — Costos directos/indirectos:
+  ├── Tipo de costo, descripción
+  ├── Cantidad, costo unitario, subtotal
+  ├── ISV, imprevistos, total
+  ├── % Utilidad y valor utilidad
+  └── Precio y oferta
+
+  ── MÓDULO 11: COTIZACIONES ──────────────────────────────────────────────────
+  Tablas:   cotiza, det_cotiza
+  cotiza:
+  ├── cod_cotiza, id_proy, id_linea, id_clie
+  ├── desc_cotiza, fecha_cotiza
+  ├── val_subtot, val_desc, val_isv, val_total
+  ├── facturado: Si/No
+  └── id_empresa
+
+  det_cotiza:
+  ├── id_prod, descripción, unidad
+  ├── cant_item, val_unit, val_subtot
+  ├── porc_desc, val_desc, val_isv, val_total
+  └── a_isv: Si/No
+
+  Pantallas:
+  ├── Lista de cotizaciones
+  ├── Crear cotización (desde proyecto)
+  ├── Editor de ítems
+  ├── Vista previa imprimible
+  └── Marcar como facturada
+
+  ── MÓDULO 12: COMPRAS ───────────────────────────────────────────────────────
+  Tablas:   compras, ord_compras, det_ocompra
+
+  ord_compras (Órdenes de compra):
+  ├── cod_ocompra, id_proy, id_linea
+  ├── id_prov, id_inge
+  ├── fecha_orden
+  ├── cost_subtot, cost_isv, cost_total
+  ├── estatus_orden: Pendiente / Aprobada / Anticipo / Cancelada
+  ├── forma_pago: Contado / Crédito
+  ├── estatus_aprob: Si/No
+  ├── fecha_aprob, nom_aprob, nom_solicita
+  ├── id_empresa
+  └── abonos, saldo_act
+
+  det_ocompra (Ítems de orden):
+  ├── id_prod, descripción, unidad
+  ├── cant_item, cost_unit, cost_subtot, cost_isv, cost_total
+  ├── a_isv: Si/No
+  ├── cant_recib, pend_recib, cant_usada, cant_actual
+  └── estatus_item: Pendiente / Anticipo / Completo
+
+  Pantallas:
+  ├── Lista de órdenes con filtros por estado
+  ├── Crear orden de compra
+  ├── Editor de ítems
+  ├── Flujo de aprobación
+  ├── Registro de abonos/pagos
+  └── Historial de compras por proveedor
+
+  ── MÓDULO 13: ENTREGAS ──────────────────────────────────────────────────────
+  Tablas:   orden_entrega, det_oentrega
+
+  orden_entrega:
+  ├── id_ocompra (vinculado a orden de compra)
+  ├── fecha_oentrega
+  ├── total_oentrega
+  └── id_inge (quien recibe)
+
+  det_oentrega:
+  ├── id_item (ítem de la OC)
+  ├── cod_prod
+  ├── cant_prod, cant_entrega, pend_entrega
+  └── fecha_hora
+
+  Pantallas:
+  ├── Registrar entrega contra orden de compra
+  ├── Control de ítems pendientes
+  └── Historial de entregas por proyecto
+
+  ── MÓDULO 14: PLANILLAS ─────────────────────────────────────────────────────
+  Tablas:   planilla, det_planilla
+
+  planilla:
+  ├── cod_plan
+  ├── desc_plan
+  ├── cta_bank (cuenta bancaria)
+  ├── fecha_plan
+  ├── total_plan
+  ├── autoriza
+  └── id_empresa
+
+  det_planilla:
+  ├── id_plan, id_proy, cod_proy
+  ├── id_linea
+  ├── desc_tra (trabajador/descripción)
+  └── valor_plan
+
+  Pantallas:
+  ├── Lista de planillas
+  ├── Crear planilla
+  ├── Agregar ítems (por proyecto/línea)
+  ├── Aprobación y autorización
+  └── Impresión de planilla
+
+  ── MÓDULO 15: REPORTES ──────────────────────────────────────────────────────
+  Reportes disponibles:
+  ├── Reporte de proyecto (costos vs. ingresos vs. utilidad)
+  ├── Reporte de cliente (historial y saldos)
+  ├── Reporte de proveedor (compras y saldos)
+  ├── Reporte de compras (órdenes por estado y período)
+  ├── Reporte de planillas (pagos por período y empresa)
+  ├── Reporte de alcances y cotizaciones
+  └── Exportación en PDF y Excel
+
+  ── MÓDULO 16: CONFIGURACIÓN ─────────────────────────────────────────────────
+  Tablas:   sof_configuracion, cuentas_bank, tip_movtos
+
+  Parámetros del sistema:
+  ├── SISTEMA_NOMBRE     → SistemaOF
+  ├── SISTEMA_VERSION    → 1.0.0
+  ├── MONEDA             → HNL
+  ├── ISV_PORCENTAJE     → 15
+  ├── SESSION_TIMEOUT    → 120 minutos
+  └── EMAIL_FROM         → (correo remitente)
+
+  Cuentas bancarias registradas:
+  ├── BAC - 730287621
+  ├── BAC - 730438151
+  ├── BAC - 730523301
+  ├── BAC - 727629381
+  ├── BAC - 751195391
+  └── FICOHSA - 200000321134
+
+================================================================================
+ 6. MATRIZ DE PERMISOS DETALLADA
+================================================================================
+
+  LEYENDA:
+  T = Total (todas las acciones)
+  L = Lectura (solo VER)
+  P = Parcial (VER + acciones seleccionadas)
+  A = Solo Aprobación
+  S = Solo Solicitud
+  N = Sin acceso
+
+  ┌───────────────────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┐
+  │ MÓDULO            │SUPRA │GEREN │ADMIN │COMPR │INGE  │FINAN │COTIZ │CONS  │
+  ├───────────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+  │ Dashboard         │  T   │  T   │  T   │  P   │  P   │  P   │  P   │  L   │
+  │ Seguridad         │  T   │  L   │  P   │  N   │  N   │  N   │  N   │  N   │
+  │ Clientes          │  T   │  T   │  T   │  L   │  L   │  L   │  L   │  L   │
+  │ Proveedores       │  T   │  T   │  T   │  T   │  L   │  L   │  L   │  L   │
+  │ Empresas          │  T   │  L   │  P   │  N   │  N   │  N   │  N   │  N   │
+  │ Ingenieros        │  T   │  L   │  T   │  L   │  T   │  N   │  N   │  L   │
+  │ Líneas            │  T   │  L   │  T   │  L   │  T   │  N   │  P   │  L   │
+  │ Productos         │  T   │  L   │  T   │  L   │  L   │  N   │  L   │  L   │
+  │ Proyectos         │  T   │  T   │  T   │  L   │  T   │  L   │  L   │  L   │
+  │ Alcances          │  T   │  T   │  T   │  L   │  T   │  L   │  P   │  L   │
+  │ Cotizaciones      │  T   │  T   │  T   │  L   │  P   │  L   │  T   │  L   │
+  │ Compras           │  T   │  A   │  T   │  T   │  S   │  L   │  N   │  L   │
+  │ Entregas          │  T   │  L   │  T   │  T   │  L   │  N   │  N   │  L   │
+  │ Planillas         │  T   │  A   │  P   │  N   │  L   │  T   │  N   │  L   │
+  │ Reportes          │  T   │  T   │  T   │  P   │  P   │  P   │  P   │  L   │
+  │ Configuración     │  T   │  N   │  P   │  N   │  N   │  N   │  N   │  N   │
+  └───────────────────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┘
+
+================================================================================
+ 7. UX/UI — DISEÑO VISUAL
+================================================================================
+
+  ESTILO:      Flat Modern Design Compacto
+  REFERENCIAS: Dropbox · Stripe · Rocket Money
+
+  DROPBOX aporta:
+  ├── Superficies limpias y enfocadas en el contenido
+  ├── Menos elementos, más impacto visual
+  └── Navegación predecible y sin ruido visual
+
+  STRIPE aporta:
+  ├── Estructura limpia y consistencia visual
+  ├── Alta legibilidad en datos financieros
+  └── Jerarquía tipográfica clara y funcional
+
+  ROCKET MONEY aporta:
+  ├── Bloques compactos de información operativa
+  ├── KPIs y estados fáciles de leer de un vistazo
+  └── Navegación simple orientada a tareas
+
+  PRINCIPIOS DE DISEÑO:
+  ├── Interfaz limpia, sobria y profesional
+  ├── Sin exceso de espacio muerto
+  ├── Tarjetas con bordes suaves, sombras mínimas
+  ├── Jerarquía visual: métricas > estados > acciones
+  ├── Colores controlados y funcionales
+  ├── Tipografía moderna y legible
+  └── Componentes consistentes en todo el sistema
+
+  NAVEGACIÓN:
+  ├── Sidebar fijo izquierdo
+  ├── Íconos + etiquetas de texto
+  ├── Sección activa resaltada
+  └── Solo módulos visibles según permisos
+
+  TABLAS:
+  ├── Alta densidad de información
+  ├── Filtros y búsqueda integrados
+  ├── Paginación compacta
+  ├── Acciones por fila según permisos
+  └── Exportación directa
+
+  FORMULARIOS:
+  ├── Segmentados en bloques lógicos
+  ├── Validación en tiempo real
+  ├── Campos obligatorios marcados
+  └── Confirmaciones para operaciones críticas
+
+  ESTADOS Y ALERTAS:
+  ├── Verde   → Aprobado / Activo / Completo
+  ├── Amarillo → Pendiente / En revisión
+  ├── Rojo    → Cancelado / Bloqueado / Error
+  └── Gris    → Inactivo / Sin datos
+
+================================================================================
+ 8. FLUJO COMPLETO DEL NEGOCIO
+================================================================================
+
+  PASO 1: Registro de cliente
+  └── Módulo Clientes → crear cliente con RTN y datos de contacto
+
+  PASO 2: Crear proyecto
+  └── Módulo Proyectos → asignar cliente, empresa, ingeniero(s),
+      fechas, código y dirección
+
+  PASO 3: Definir alcances y costos
+  └── Módulo Alcances → por línea de servicio, definir:
+      materiales, mano de obra, costos indirectos,
+      % de utilidad y precio de oferta
+
+  PASO 4: Generar cotización
+  └── Módulo Cotizaciones → crear documento comercial
+      a partir del alcance, con ítems, descuentos e ISV
+
+  PASO 5: Aprobación del cliente
+  └── Cotización enviada → marcar como facturada al aprobar
+
+  PASO 6: Emisión de órdenes de compra
+  └── Módulo Compras → OC por proveedor con ítems,
+      forma de pago, ingeniero solicitante,
+      requiere aprobación según nivel
+
+  PASO 7: Recepción de materiales
+  └── Módulo Entregas → registrar entrega contra OC,
+      controlar cantidades recibidas vs. pendientes
+
+  PASO 8: Pago a trabajadores
+  └── Módulo Planillas → crear planilla por proyecto/línea,
+      seleccionar cuenta bancaria, registrar pagos,
+      requerir autorización
+
+  PASO 9: Reportes y cierre
+  └── Módulo Reportes → generar reporte de costos vs.
+      ingresos, utilidad real del proyecto,
+      exportar en PDF o Excel
+
+================================================================================
+ 9. BASE DE DATOS — TABLAS COMPLETAS
+================================================================================
+
+  TABLAS ORIGINALES (25 tablas, latin1):
+  ├── alcance           → Alcances por proyecto/línea
+  ├── clientes          → Catálogo de clientes
+  ├── compras           → Registro general de compras
+  ├── costos            → Catálogo de tipos de costo
+  ├── cotiza            → Encabezados de cotizaciones
+  ├── cuentas_bank      → Cuentas bancarias
+  ├── det_alcance       → Ítems del alcance
+  ├── det_costos        → Costos aplicados por proyecto
+  ├── det_cotiza        → Ítems de cotización
+  ├── det_lineas        → Estado y costos por línea/proyecto
+  ├── det_ocompra       → Ítems de órdenes de compra
+  ├── det_oentrega      → Ítems de órdenes de entrega
+  ├── det_planilla      → Ítems de planilla
+  ├── empresas          → Empresas del sistema
+  ├── ingenieros        → Catálogo de ingenieros
+  ├── lineas            → Líneas de servicio
+  ├── mano_obra         → Catálogo de mano de obra
+  ├── orden_entrega     → Órdenes de entrega
+  ├── ord_compras       → Órdenes de compra
+  ├── planilla          → Planillas de pago
+  ├── productos         → Catálogo de productos/servicios
+  ├── proveedores       → Catálogo de proveedores
+  ├── proyectos         → Proyectos del sistema
+  ├── tipos             → Tipos de producto
+  ├── tip_movtos        → Tipos de movimiento
+  └── usuarios          → Tabla legacy (compatibilidad)
+
+  TABLAS NUEVAS RBAC (10 tablas, utf8mb4):
+  ├── sof_users           → Usuarios (nueva, segura)
+  ├── sof_roles           → Roles del sistema
+  ├── sof_modulos         → Módulos con rutas e íconos
+  ├── sof_acciones        → Catálogo de acciones
+  ├── sof_user_roles      → Relación usuario↔rol
+  ├── sof_role_permissions → Permisos rol+módulo+acción
+  ├── sof_audit_logs      → Bitácora de acciones
+  ├── sof_user_sessions   → Sesiones activas
+  ├── sof_password_resets → Tokens de recuperación
+  └── sof_configuracion   → Parámetros del sistema
+
+  TOTAL: 35 tablas
+
+================================================================================
+ 10. DATOS DEL SISTEMA (BASE ACTUAL)
+================================================================================
+
+  Empresas activas:       2
+  Clientes registrados:   25
+  Proveedores:            5
+  Ingenieros activos:     8
+  Líneas de servicio:     7
+  Productos/servicios:    21
+  Cuentas bancarias:      6 (BAC x5, FICOHSA x1)
+  Moneda base:            HNL (Lempira hondureño)
+  ISV aplicado:           15%
+  Sesión timeout:         120 minutos
+
+================================================================================
+ 11. FASES DE DESARROLLO
+================================================================================
+
+  FASE 1 — NÚCLEO Y SEGURIDAD
+  Objetivo: Sistema funcional con autenticación y permisos
+  ├── Estructura MVC y configuración base
+  ├── Autenticación completa (login, logout, recuperación)
+  ├── Gestión de usuarios (sof_users)
+  ├── Gestión de roles (sof_roles)
+  ├── Módulos y acciones (sof_modulos, sof_acciones)
+  ├── Permisos RBAC completos
+  ├── Bitácora y sesiones
+  └── Dashboard con KPIs básicos
+  Entregable: Sistema con login y panel de administración
+
+  FASE 2 — CATÁLOGOS Y MAESTROS
+  Objetivo: Todos los catálogos operativos disponibles
+  ├── Módulo Clientes (CRUD + saldos)
+  ├── Módulo Proveedores (CRUD + saldos)
+  ├── Módulo Empresas
+  ├── Módulo Ingenieros
+  ├── Módulo Líneas de servicio
+  ├── Módulo Productos y tipos
+  ├── Módulo Mano de obra
+  ├── Módulo Costos configurables
+  └── Módulo Cuentas bancarias
+  Entregable: Catálogos completos y operativos
+
+  FASE 3 — PROYECTOS Y OPERACIONES CORE
+  Objetivo: Gestión completa de proyectos y presupuestos
+  ├── Módulo Proyectos (ficha maestra)
+  ├── Módulo Alcances y detalle
+  ├── Módulo Costos directos e indirectos
+  └── Control de líneas por proyecto (det_lineas)
+  Entregable: Creación y seguimiento de proyectos con presupuesto
+
+  FASE 4 — DOCUMENTOS COMERCIALES Y COMPRAS
+  Objetivo: Flujo comercial y de abastecimiento completo
+  ├── Módulo Cotizaciones
+  ├── Módulo Órdenes de compra
+  ├── Flujo de aprobación de compras
+  ├── Módulo Entregas y control de inventario
+  └── Registro de compras y saldos
+  Entregable: Ciclo cotización → compra → entrega operativo
+
+  FASE 5 — FINANZAS, REPORTES Y CIERRE
+  Objetivo: Control financiero y análisis del negocio
+  ├── Módulo Planillas de pago
+  ├── Módulo Reportes operativos y financieros
+  ├── Exportación PDF y Excel
+  ├── Auditoría avanzada
+  └── Configuración general del sistema
+  Entregable: Sistema 100% funcional listo para producción
+
+================================================================================
+ 12. BACKLOG INMEDIATO (SPRINT 1)
+================================================================================
+
+  PRIORIDAD ALTA:
+  1. [ ] Diseñar modelo RBAC final con todas las relaciones
+  2. [ ] Crear script SQL de migraciones v3 con FK formales
+  3. [ ] Definir matriz exacta de permisos por rol/módulo/acción
+  4. [ ] Wireframes: Login + Recuperación de contraseña
+  5. [ ] Wireframes: Dashboard principal
+  6. [ ] Wireframes: Panel de Seguridad (usuarios, roles, permisos)
+
+  PRIORIDAD MEDIA:
+  7. [ ] Wireframes: Ficha maestra de Proyecto
+  8. [ ] Wireframes: Alcances y Cotizaciones
+  9. [ ] Setup del framework MVC base (rutas + controladores + middleware)
+  10.[ ] Implementar AuthMiddleware y RoleMiddleware
+
+  PRIORIDAD NORMAL:
+  11.[ ] Módulo de Seguridad completo (Fase 1)
+  12.[ ] Módulo de Catálogos (Fase 2)
+  13.[ ] Pruebas unitarias de permisos por rol
+  14.[ ] Documentación técnica de la API interna
+
+================================================================================
+ 13. RECOMENDACIONES TÉCNICAS
+================================================================================
+
+  BASE DE DATOS:
+  ├── Migrar tablas originales a utf8mb4 gradualmente
+  ├── Formalizar llaves foráneas con CASCADE/RESTRICT
+  ├── Agregar índices en campos de búsqueda frecuente
+  ├── Centralizar cálculos financieros en Services (no en DB)
+  └── Usar vistas (VIEWS) para reportes complejos
+
+  SEGURIDAD:
+  ├── Contraseñas con bcrypt (costo 12+) o argon2id
+  ├── Tokens CSRF en todos los formularios
+  ├── Validación de entradas en Controller + Model
+  ├── Rate limiting en login y recuperación
+  ├── Sesiones con regeneración de ID tras login
+  └── HTTPS obligatorio en producción
+
+  CÓDIGO:
+  ├── PSR-4 para autoloading
+  ├── Principio de responsabilidad única por clase
+  ├── Inyección de dependencias en Services
+  ├── Excepciones tipadas para errores del negocio
+  └── Logs de errores separados de la bitácora de usuario
+
+================================================================================
+ FIN DEL DOCUMENTO — SistemaOF v3.0
+ Planificación detallada completa
+================================================================================
