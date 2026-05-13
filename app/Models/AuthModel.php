@@ -39,13 +39,12 @@ class AuthModel {
             ");
             $stmt->execute();
         } else {
-            // Solo módulos donde el rol tenga permiso VER (id_accion=1)
+            // Módulos donde el rol tenga CUALQUIER permiso asignado
             $stmt = $this->db->prepare("
-                SELECT m.cod_modulo, m.nom_modulo, m.ruta_modulo, m.icono, m.orden
+                SELECT DISTINCT m.cod_modulo, m.nom_modulo, m.ruta_modulo, m.icono, m.orden
                 FROM sof_role_permissions rp
                 INNER JOIN sof_modulos m ON rp.id_modulo = m.id_modulo
                 WHERE rp.id_rol = :id_rol 
-                  AND rp.id_accion = 1
                   AND rp.permitido = 1
                   AND m.estatus = 'Activo'
                 ORDER BY m.orden ASC

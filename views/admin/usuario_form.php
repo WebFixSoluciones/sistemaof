@@ -7,10 +7,6 @@
 </div>
 
 <div class="max-w-xl">
-    <?php if (!empty($error)): ?>
-    <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-
     <form action="<?= BASE_URL ?>/admin/usuarios/guardar" method="POST" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
 
         <div>

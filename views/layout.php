@@ -23,6 +23,7 @@
             }
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .glass-card {
             background: rgba(255,255,255,0.92);
@@ -88,6 +89,20 @@
         <p class="px-3 pt-5 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Compras & Campo</p>
 
         <?php if (puedeVer('COMPRAS')): ?>
+        <a href="<?= BASE_URL ?>/compras"
+           class="nav-item <?= isActive('/compras') && !isActive('/compras/aprobacion') && !isActive('/compras/recepcion') && !isActive('/compras/stock') && !isActive('/compras/recibir') ? 'active' : '' ?> flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
+            <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Control de OC
+        </a>
+        <a href="<?= BASE_URL ?>/compras/stock"
+           class="nav-item <?= isActive('/compras/stock') ?> flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
+            <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            Stock Productos
+        </a>
         <a href="<?= BASE_URL ?>/compras/aprobacion"
            class="nav-item <?= isActive('/compras/aprobacion') ?> flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
             <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -109,7 +124,7 @@
         <?php endif; ?>
 
         <!-- ── ADMINISTRACIÓN (solo Superadmin) ── -->
-        <?php if ($sess_superadmin): ?>
+        <?php if ($sess_superadmin || puedeVer('SEGURIDAD')): ?>
         <p class="px-3 pt-5 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Administración</p>
         <a href="<?= BASE_URL ?>/admin/seguridad"
            class="nav-item <?= isActive('/admin/seguridad') ?> flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700">
@@ -156,8 +171,12 @@
     <?php if (!empty($_SESSION['user_id'])): ?>
     <header class="h-14 bg-surface border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm">
         <h1 class="text-base font-semibold text-gray-800"><?= htmlspecialchars($title ?? 'Página') ?></h1>
-        <div class="flex items-center gap-3 text-xs text-gray-500">
-            <span><?= date('d/m/Y') ?></span>
+        <div class="flex items-center gap-4 text-xs">
+            <div class="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 rounded-md font-medium border border-green-100">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                BD Sincronizada
+            </div>
+            <span class="text-gray-500"><?= date('d/m/Y') ?></span>
             <span class="text-gray-300">|</span>
             <span class="font-medium text-gray-700"><?= htmlspecialchars($sess_user_name) ?></span>
         </div>
@@ -168,6 +187,30 @@
         <?= $content ?>
     </div>
 </main>
+
+<script>
+    // Sistema global de alertas SweetAlert2
+    <?php if (isset($_SESSION['swal_success'])): ?>
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: '<?= htmlspecialchars($_SESSION['swal_success']) ?>',
+            timer: 3000,
+            showConfirmButton: false
+        });
+        <?php unset($_SESSION['swal_success']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['swal_error'])): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '<?= htmlspecialchars($_SESSION['swal_error']) ?>',
+            confirmButtonColor: '#6366f1'
+        });
+        <?php unset($_SESSION['swal_error']); ?>
+    <?php endif; ?>
+</script>
 
 </body>
 </html>

@@ -44,6 +44,11 @@ abstract class BaseController {
         if (empty($_SESSION['user_id'])) {
             $this->redirect('/login');
         }
+
+        // Refrescar permisos en cada petición para que los cambios surtan efecto inmediato
+        $model = new \App\Models\AuthModel();
+        $es_superadmin = !empty($_SESSION['es_superadmin']);
+        $_SESSION['modulos_permitidos'] = $model->getModulosPermitidos((int)$_SESSION['user_role_id'], $es_superadmin);
     }
 
     /**

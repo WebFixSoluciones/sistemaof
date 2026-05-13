@@ -31,11 +31,17 @@ Router::get('/dashboard', [DashboardController::class, 'index']);
 
 // Rutas de Admin/Seguridad
 Router::get('/admin/seguridad', [AdminController::class, 'seguridad']);
+Router::post('/admin/seguridad/guardar', [AdminController::class, 'guardarPermisos']);
+Router::get('/admin/roles/crear', [AdminController::class, 'crearRol']);
+Router::post('/admin/roles/guardar', [AdminController::class, 'guardarRol']);
 Router::get('/admin/usuarios', [AdminController::class, 'usuarios']);
 Router::get('/admin/usuarios/crear', [AdminController::class, 'crearUsuario']);
 Router::post('/admin/usuarios/guardar', [AdminController::class, 'guardarUsuario']);
 
 // Rutas de Compras y Entregas (Fase 4)
+Router::get('/compras', [CompraController::class, 'index']);
+Router::get('/compras/detalle', [CompraController::class, 'detalle']);
+Router::get('/compras/stock', [CompraController::class, 'stock']);
 Router::get('/compras/aprobacion', [CompraController::class, 'aprobacion']);
 Router::post('/compras/aprobar', [CompraController::class, 'aprobarOc']);
 Router::get('/compras/recepcion', [CompraController::class, 'recepcion']);

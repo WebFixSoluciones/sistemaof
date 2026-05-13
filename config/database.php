@@ -32,11 +32,23 @@ function getDBConnection(): PDO {
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (\PDOException $e) {
-            // Mostrar error amigable sin exponer credenciales
             http_response_code(500);
             die("<b>Error de conexión a la base de datos.</b> Verifica la configuración en <code>config/database.php</code>.<br><small>" . $e->getMessage() . "</small>");
         }
     }
 
     return $pdo;
+}
+
+/**
+ * Verifica si la conexión a la BD está activa sin detener el script.
+ */
+function checkDBConnection(): bool {
+    try {
+        $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        return true;
+    } catch (\PDOException $e) {
+        return false;
+    }
 }
